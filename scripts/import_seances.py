@@ -8,7 +8,10 @@ import re
 import sys
 from zoneinfo import ZoneInfo
 
-DEPARTMENTS = ("75", "77", "78", "91", "92", "93", "94", "95")
+# Postal ranges: 20 covers both Corsican departments.
+POSTAL_RANGES = tuple((n * 1000, n * 1000 + 999) for n in range(1, 96)) + tuple(
+    (n * 100, n * 100 + 99) for n in (971, 972, 973, 974, 976)
+)
 REQUIRED = {"cinecp", "cinenom", "showstart", "filmtitle", "_coords.lat",
             "_coords.lon", "showurl", "filmversion"}
 PARIS = ZoneInfo("Europe/Paris")
@@ -21,7 +24,10 @@ def read_shows(path, now):
         if not REQUIRED.issubset(reader.fieldnames or []):
             raise ValueError("Colonnes manquantes dans l’export SCARE.")
         for row in reader:
-            if (row["cinecp"] or "").strip()[:2] not in DEPARTMENTS:
+            postal_code = (row["cinecp"] or "").strip()
+            if len(postal_code) != 5 or not postal_code.isascii() or not postal_code.isdecimal():
+                continue
+            if not any(first <= int(postal_code) <= last for first, last in POSTAL_RANGES):
                 continue
             if not all(row[key] for key in REQUIRED - {"showurl", "filmversion"}):
                 continue
