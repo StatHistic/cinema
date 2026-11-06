@@ -3,7 +3,10 @@
 <title>Séance proche</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#141218;color:#fff7ee;font:16px system-ui,sans-serif}main{max-width:850px;margin:auto;padding:clamp(16px,5vw,48px)}header{padding:28px 0}small,.muted{color:#d0bdcb}h1{font-size:clamp(40px,9vw,76px);line-height:1;margin:10px 0;letter-spacing:-.065em}h2{margin-top:28px}.tag{color:#ffb583;font-weight:700;letter-spacing:.12em}form,article,aside{background:#251f29;border:1px solid #46384a;border-radius:16px;padding:16px}form{display:grid;gap:14px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:10px}label{display:grid;gap:5px}input,select,button{font:inherit;color:inherit;background:#342b38;border:1px solid #67546a;border-radius:8px;padding:9px;min-width:0;color-scheme:dark}button{cursor:pointer}button.primary{background:#ffb583;color:#251519;font-weight:bold}a{color:#ffb583}article{margin:8px 0}article p{margin:5px 0}h3{color:#ffb583;margin-bottom:6px}summary{cursor:pointer}li{margin:7px 0}footer{margin:25px 0}aside{margin-top:25px}
-.choices{display:grid;gap:6px}.choices:empty{display:none}.choices button{text-align:left}.choices button:focus-visible{outline:2px solid #ffb583}.days{display:flex;gap:8px;overflow-x:auto;padding:4px 0}.days:empty{display:none}.days button{flex:none}.days [aria-pressed=true]{background:#ffb583;color:#251519;font-weight:700}.table-wrap{overflow-x:auto;margin-top:10px;border:1px solid #46384a;border-radius:12px}table{border-collapse:collapse;width:100%;min-width:850px}th,td{text-align:left;vertical-align:top;padding:10px;border-bottom:1px solid #46384a}thead th{white-space:nowrap}th:first-child{position:sticky;left:0;background:#251f29;min-width:125px;width:20%}td small{display:block;margin-top:4px}.table-wrap:focus-visible{outline:2px solid #ffb583}</style>
+.choices{display:grid;gap:6px}.choices:empty{display:none}.choices button{text-align:left}.choices button:focus-visible{outline:2px solid #ffb583}.days{display:flex;gap:8px;overflow-x:auto;padding:4px 0}.days:empty{display:none}.days button{flex:none}.days [aria-pressed=true]{background:#ffb583;color:#251519;font-weight:700}.table-wrap{overflow-x:auto;margin-top:10px;border:1px solid #46384a;border-radius:12px}table{border-collapse:collapse;width:100%;min-width:850px}th,td{text-align:left;vertical-align:top;padding:10px;border-bottom:1px solid #46384a}thead th{white-space:nowrap}th:first-child{position:sticky;left:0;background:#251f29;min-width:125px;width:20%}td small{display:block;margin-top:4px}.table-wrap:focus-visible{outline:2px solid #ffb583}
+[hidden]{display:none!important}main{max-width:1160px}.view-switch{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.view-switch [aria-pressed=true]{background:#ffb583;color:#251519;font-weight:700}#cinema-filter{max-width:440px;margin:12px 0}table{min-width:0;table-layout:fixed}thead th{white-space:normal}th,td{overflow-wrap:anywhere}th:first-child{min-width:0}.cinema-films{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:10px}.cinema-films article{margin:0}.show-times{display:flex;flex-wrap:wrap;gap:8px;padding:0;list-style:none}.show-times li{padding:5px 8px;background:#342b38;border-radius:6px;margin:0}
+@media(max-width:800px){.table-wrap{border:0;overflow:visible}table,tbody{display:block}thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}tbody tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;background:#251f29;border:1px solid #46384a;border-radius:12px;padding:10px;margin:10px 0}tbody th:first-child{position:static;width:auto;grid-column:1/-1}td{padding:8px;border:0;background:#342b38;border-radius:6px}td::before{content:attr(data-slot);display:block;color:#ffb583;font-size:.82rem;font-weight:700;margin-bottom:4px}}
+</style>
 <body data-imported-at="">
 <main>
 <header><div class="tag">CINÉMA DE PROXIMITÉ</div><h1>On se fait<br>une séance ?</h1><p class="muted">Les films autour de toi, de 14 h à 20 h.</p></header>
@@ -11,10 +14,16 @@
 <div class="grid"><label>Commune de départ<input id="place" type="search" autocomplete="off" placeholder="Ex. Ivry-sur-Seine" aria-describedby="placeHelp"></label><button type="button" id="locate">Utiliser ma position</button></div>
 <small id="placeHelp">Saisis au moins deux lettres, puis sélectionne une commune. Le départ se fait depuis son centre.</small><div id="suggestions" class="choices" aria-label="Communes proposées"></div>
 <div class="grid"><label>Du<input type="date" id="day" required></label><label>Au (inclus)<input type="date" id="lastDay" required></label><label>Distance max. (km)<input id="radius" type="number" min="0.5" max="200" step="any" value="5" required></label></div>
-<div class="grid"><button class="primary">Voir les séances</button><button type="button" id="demo">Essai · dimanche à 14 h</button></div>
+<div class="grid"><button class="primary">Voir les séances</button></div>
 <small id="status" role="status"></small>
 </form>
-<h2>Séances disponibles dans nos sources</h2><p id="count" role="status" class="muted"></p><div id="days" class="days" role="group" aria-label="Jour affiché"></div><div id="results"></div>
+<h2>Séances disponibles dans nos sources</h2><p id="count" role="status" class="muted"></p><div id="days" class="days" role="group" aria-label="Jour affiché"></div><div id="view-controls" hidden>
+<div class="view-switch" role="group" aria-label="Présentation des séances">
+<button id="by-film" type="button" aria-pressed="true">Par film · 14 h–20 h</button>
+<button id="by-cinema" type="button" aria-pressed="false">Par cinéma · journée</button>
+</div>
+<label id="cinema-filter" hidden>Cinéma<select id="cinema-select"></select></label>
+</div><div id="results"></div>
 <aside><h2>Autres programmes à consulter</h2><p>Liens directs vers les programmes des salles référencées.</p><ul id="links"></ul></aside>
 <footer class="muted"><small>Source des horaires · <a href="https://www.data.gouv.fr/datasets/programmation-des-cinemas-independants">SCARE, Programmation des cinémas indépendants</a> · <a href="https://www.etalab.gouv.fr/wp-content/uploads/2017/04/ETALAB-Licence-Ouverte-v2.0.pdf">Licence Ouverte 2.0</a>. <span id="freshness">Données de démonstration issues du CSV fourni.</span> Horaires de Paris. Distances à vol d’oiseau. Communes · <a href="https://geo.api.gouv.fr/decoupage-administratif">API Découpage administratif</a>, export du 6 novembre 2026. Recherche et calcul des distances dans le navigateur.</small></footer>
 </main>
@@ -27,7 +36,6 @@ const dateTime = new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Paris',dateSt
 const [today, now] = dateTime.format(new Date()).split(' ');
 const importedAt = document.body.dataset.importedAt;
 if(importedAt){
- $('demo').hidden=true;
  const updated=new Date(importedAt);
  const age=Date.now()-updated.getTime();
  $('freshness').textContent='Île-de-France · Dernier import réussi le '+new Intl.DateTimeFormat('fr-FR',{
@@ -94,10 +102,16 @@ function distance(lat,lon,from){
  return 6371*2*Math.asin(Math.min(1,Math.sqrt(a)));
 }
 const km = n => n.toLocaleString('fr-FR',{maximumFractionDigits:1})+' km';
+let view='film';
+let selectedCinema='';
+let activeDay=0;
+const slots=Array.from({length:6},(_,i)=>(14+i)+' h – '+(15+i)+' h');
+const timeLabel=time=>time.replace(':',' h ');
 function render(){
  const from=origin;
  const first=$('day').value, last=$('lastDay').value, radius=Number($('radius').value);
  const results=$('results'), links=$('links');
+ $('view-controls').hidden=true;
  results.replaceChildren(); links.replaceChildren(); $('days').replaceChildren();
  if(!from){$('count').textContent='Choisis une commune ou utilise ta position.';return;}
  if(!$('radius').validity.valid){$('count').textContent='Indique une distance entre 0,5 et 200 km.';return;}
@@ -113,26 +127,40 @@ function render(){
  const dates=Array.from({length:span+1},(_,i)=>new Date(+firstDate+i*86400000));
  const formatDay=new Intl.DateTimeFormat('fr-FR',{weekday:'short',day:'numeric',month:'short',timeZone:'UTC'});
  const buttons=[];
+ $('view-controls').hidden=false;
  function display(index){
+  activeDay=index;
+  $('by-film').setAttribute('aria-pressed',String(view==='film'));
+  $('by-cinema').setAttribute('aria-pressed',String(view==='cinema'));
+  $('cinema-filter').hidden=view!=='cinema';
   buttons.forEach((button,i)=>button.setAttribute('aria-pressed',String(index===i)));
   results.replaceChildren();
   const date=dates[index].toISOString().slice(0,10);
-  const films=new Map();
+  const nearby=[];
   for(const [day,time,title,cinema,lat,lon,url,version] of data){
-   if(day!==date||time<'14:00'||time>='20:00') continue;
+   if(day!==date) continue;
    if(importedAt&&(day<today||(day===today&&time<=now))) continue;
    const d=distance(lat,lon,from);
-   if(d>radius) continue;
+   if(d<=radius) nearby.push({time,title,cinema,url,version,d,cinemaKey:JSON.stringify([cinema,lat,lon])});
+  }
+  const dateLabel=formatDay.format(dates[index]);
+  if(view==='cinema'){
+   displayCinema(nearby,dateLabel,results);
+   return;
+  }
+  const films=new Map();
+  for(const show of nearby){
+   const {time,title,d}=show;
+   if(time<'14:00'||time>='20:00') continue;
    const key=normalize(title)||title;
    if(!films.has(key)) films.set(key,{title,slots:Array(6).fill(null)});
    const slot=Number(time.slice(0,2))-14;
    const slots=films.get(key).slots;
    const previous=slots[slot];
    if(!previous||d<previous.d||(d===previous.d&&time<previous.time)){
-    slots[slot]={time,cinema,url,version,d};
+    slots[slot]=show;
    }
   }
-  const dateLabel=formatDay.format(dates[index]);
   $('count').textContent=films.size
    ? dateLabel+' · '+films.size+(films.size===1?' film':' films')+' · de 14 h à 20 h'
    : dateLabel+' · Aucun film trouvé dans cet export pour ce rayon et ces horaires.';
@@ -144,20 +172,21 @@ function render(){
   wrap.setAttribute('aria-label','Tableau des séances du '+dateLabel);
   const table=node('table','',wrap);
   const headings=node('tr','',node('thead','',table));
-  for(const label of ['Film',...Array.from({length:6},(_,i)=>(14+i)+' h – '+(15+i)+' h')]){
+  for(const label of ['Film',...slots]){
    node('th',label,headings).scope='col';
   }
   const body=node('tbody','',table);
   for(const film of [...films.values()].sort((a,b)=>a.title.localeCompare(b.title,'fr'))){
    const row=node('tr','',body);
    node('th',film.title,row).scope='row';
-   for(const show of film.slots){
+   film.slots.forEach((show,index)=>{
     const cell=node('td',show?'':'—',row);
-    if(!show) continue;
+    cell.dataset.slot=slots[index];
+    if(!show) return;
     if(show.url?.startsWith('https://')) link(show.cinema,show.url,cell);
     else node('span',show.cinema,cell);
-    node('small',show.time.replace(':',' h ')+ ' · '+km(show.d)+(show.version?' · '+show.version:''),cell);
-   }
+    node('small',timeLabel(show.time)+ ' · '+km(show.d)+(show.version?' · '+show.version:''),cell);
+   });
   }
  }
  if(dates.length>1){
@@ -168,9 +197,48 @@ function render(){
    buttons.push(button);
   });
  }
- display(0);
+ display(Math.min(activeDay,dates.length-1));
 }
-$('filters').addEventListener('submit',e=>{e.preventDefault();render();});
+function displayCinema(nearby,dateLabel,results){
+ const select=$('cinema-select');
+ const cinemas=new Map();
+ for(const show of nearby) cinemas.set(show.cinemaKey,show);
+ select.replaceChildren();
+ for(const show of [...cinemas.values()].sort((a,b)=>a.d-b.d||a.cinema.localeCompare(b.cinema,'fr'))){
+  node('option',show.cinema+' · '+km(show.d),select).value=show.cinemaKey;
+ }
+ if(cinemas.has(selectedCinema)) select.value=selectedCinema;
+ select.disabled=!cinemas.size;
+ if(!cinemas.size){
+  $('count').textContent=dateLabel+' · Aucune séance trouvée dans ce rayon.';
+  return;
+ }
+ const films=new Map();
+ for(const show of nearby.filter(show=>show.cinemaKey===select.value).sort((a,b)=>a.time.localeCompare(b.time))){
+  const key=normalize(show.title)||show.title;
+  if(!films.has(key)) films.set(key,{title:show.title,shows:[]});
+  films.get(key).shows.push(show);
+ }
+ $('count').textContent=dateLabel+' · '+films.size+(films.size===1?' film':' films')+' · Toute la journée';
+ const cards=node('div','',results);
+ cards.className='cinema-films';
+ for(const film of [...films.values()].sort((a,b)=>a.title.localeCompare(b.title,'fr'))){
+  const card=node('article','',cards);
+  node('strong',film.title,card);
+  const times=node('ul','',card);
+  times.className='show-times';
+  for(const show of film.shows){
+   const label=timeLabel(show.time)+(show.version?' · '+show.version:'');
+   const item=node('li','',times);
+   if(show.url?.startsWith('https://')) link(label,show.url,item);
+   else item.textContent=label;
+  }
+ }
+}
+$('by-film').addEventListener('click',()=>{view='film';render();});
+$('by-cinema').addEventListener('click',()=>{view='cinema';render();});
+$('cinema-select').addEventListener('change',()=>{selectedCinema=$('cinema-select').value;render();});
+$('filters').addEventListener('submit',e=>{e.preventDefault();activeDay=0;render();});
 $('place').addEventListener('input',()=>{locationRequest++;origin=null;$('status').textContent='';suggest();render();});
 $('place').addEventListener('keydown',event=>{
  if(event.key==='ArrowDown' && $('suggestions').querySelector('button')){
@@ -180,10 +248,6 @@ $('place').addEventListener('keydown',event=>{
 });
 $('radius').addEventListener('change',render);
 $('day').addEventListener('change',()=>{if($('lastDay').value<$('day').value) $('lastDay').value=$('day').value;});
-$('demo').addEventListener('click',()=>{
- locationRequest++;origin=[48.831,2.355];$('place').value='Paris 13ᵉ · Place d’Italie';$('suggestions').replaceChildren();$('day').value='2026-11-08';$('lastDay').value='2026-11-08';$('radius').value='5';
- $('status').textContent='Démonstration · dimanche 8 novembre 2026 depuis Place d’Italie.';render();
-});
 $('locate').addEventListener('click',()=>{
  if(!navigator.geolocation){$('status').textContent='Position indisponible. Choisis un point de départ.';return;}
  $('status').textContent='Recherche de ta position…';
