@@ -8,8 +8,8 @@ import re
 import sys
 from zoneinfo import ZoneInfo
 
-CINEMAS = {"2202551", "1008422", "1008531", "1008451", "1000751"}
-REQUIRED = {"cineid", "cinenom", "showstart", "filmtitle", "_coords.lat",
+DEPARTMENTS = ("75", "77", "78", "91", "92", "93", "94", "95")
+REQUIRED = {"cinecp", "cinenom", "showstart", "filmtitle", "_coords.lat",
             "_coords.lon", "showurl", "filmversion"}
 PARIS = ZoneInfo("Europe/Paris")
 
@@ -21,10 +21,10 @@ def read_shows(path, now):
         if not REQUIRED.issubset(reader.fieldnames or []):
             raise ValueError("Colonnes manquantes dans l’export SCARE.")
         for row in reader:
-            if row["cineid"] not in CINEMAS:
+            if (row["cinecp"] or "").strip()[:2] not in DEPARTMENTS:
                 continue
             if not all(row[key] for key in REQUIRED - {"showurl", "filmversion"}):
-                raise ValueError("Séance incomplète dans l’export SCARE.")
+                continue
             start = datetime.fromisoformat(row["showstart"])
             if start.tzinfo is None:
                 raise ValueError("Fuseau horaire absent de l’export SCARE.")
