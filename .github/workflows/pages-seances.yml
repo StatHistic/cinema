@@ -21,7 +21,7 @@ jobs:
   deploy:
     if: github.ref == 'refs/heads/main' && (github.event_name != 'workflow_dispatch' || github.actor == github.repository_owner)
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 25
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -29,39 +29,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
       - name: Télécharger et valider les séances du SCARE
-        shell: bash
         run: |
-          python3 - "$RUNNER_TEMP/scare.csv" <<'PYTHON'
-          import csv
-          import io
-          import subprocess
-          import sys
-          from urllib.parse import urlencode
-          from scripts.import_seances import DEPARTMENTS, REQUIRED
-
-          endpoint = "https://datacinesindes.fr/data-fair/api/v1/datasets/programmation-cinemas/lines"
-          size = 10000
-          with open(sys.argv[1], "w", encoding="utf-8", newline="") as output:
-              writer = csv.DictWriter(output, fieldnames=sorted(REQUIRED), extrasaction="ignore")
-              writer.writeheader()
-              for department in DEPARTMENTS:
-                  query = urlencode(dict(draft="false", size=size, page=1, format="csv", sep=",",
-                                         qs=f"cinecp:[{department}000 TO {department}999]"))
-                  content = subprocess.check_output([
-                      "curl", "--fail", "--silent", "--show-error", "--location",
-                      "--retry", "2", "--max-time", "45", endpoint + "?" + query,
-                  ])
-                  reader = csv.DictReader(io.StringIO(content.decode("utf-8-sig"), newline=""), strict=True)
-                  if not REQUIRED.issubset(reader.fieldnames or []):
-                      raise ValueError(f"{department} : en-tête CSV inattendu.")
-                  rows = list(reader)
-                  if len(rows) >= size:
-                      raise ValueError(f"{department} : export possiblement tronqué.")
-                  if any(not (row["cinecp"] or "").strip().startswith(department) for row in rows):
-                      raise ValueError(f"{department} : le serveur n’a pas appliqué le filtre.")
-                  writer.writerows(rows)
-                  print(f"{department} : {len(rows)} lignes téléchargées.", flush=True)
-          PYTHON
+          python3 scripts/telecharger_seances.py "$RUNNER_TEMP/scare.csv"
           python3 scripts/import_seances.py "$RUNNER_TEMP/scare.csv" index.html public/index.html
       - uses: actions/upload-pages-artifact@v4
         with:
