@@ -1,1 +1,52 @@
+name: Actualiser les séances et publier
 
+on:
+  schedule:
+    - cron: '23 5 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [index.html, scripts/import_seances.py, .github/workflows/pages-seances.yml]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main' && (github.event_name != 'workflow_dispatch' || github.actor == github.repository_owner)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - name: Télécharger et valider les séances du SCARE
+        shell: bash
+        run: |
+          for url in \
+            'https://data-cines-indes.koumoul.com/data-fair/api/v1/datasets/programmation-cinemas/full?format=csv' \
+            'https://datacinesindes.fr/data-fair/api/v1/datasets/programmation-cinemas/full?format=csv' \
+            'https://www.data.gouv.fr/api/1/datasets/r/9b092594-a8a4-4a8d-a1e0-b950e4328a9d'
+          do
+            if curl --fail --silent --show-error --location --retry 2 --max-time 45 "$url" -o "$RUNNER_TEMP/scare.csv" &&
+              python3 scripts/import_seances.py "$RUNNER_TEMP/scare.csv" index.html public/index.html
+            then
+              exit 0
+            fi
+          done
+          echo "::error::Aucun export SCARE valide. Le site déjà publié est conservé."
+          exit 1
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: public
+      - name: Publier sur GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
