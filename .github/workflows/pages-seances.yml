@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: [index.html, scripts/import_seances.py, .github/workflows/pages-seances.yml]
+    paths: [index.html, scripts/import_seances.py, scripts/telecharger_seances.py, .github/workflows/pages-seances.yml]
 
 permissions:
   contents: read
