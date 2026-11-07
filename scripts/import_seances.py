@@ -29,7 +29,7 @@ def read_shows(path, now):
                 continue
             if not any(first <= int(postal_code) <= last for first, last in POSTAL_RANGES):
                 continue
-            if not all(row[key] for key in REQUIRED - {"showurl", "filmversion"}):
+            if not all(row[key] for key in REQUIRED - {"showurl", "filmversion", "_coords.lat", "_coords.lon"}):
                 continue
             start = datetime.fromisoformat(row["showstart"])
             if start.tzinfo is None:
@@ -37,15 +37,22 @@ def read_shows(path, now):
             if start <= now:
                 continue
             local = start.astimezone(PARIS)
-            lat, lon = float(row["_coords.lat"]), float(row["_coords.lon"])
-            if not all(map(math.isfinite, (lat, lon))) or abs(lat) > 90 or abs(lon) > 180:
-                raise ValueError("Coordonnées invalides dans l’export SCARE.")
+            try:
+                lat, lon = float(row["_coords.lat"]), float(row["_coords.lon"])
+                if not all(map(math.isfinite, (lat, lon))) or abs(lat) > 90 or abs(lon) > 180:
+                    lat, lon = None, None
+            except (ValueError, TypeError):
+                lat, lon = None, None
+            # Acceslibre, Le Gallia, Saintes. Licence Ouverte 2.0.
+            # Source fiche mise à jour le 2023-07-04, consultée le 2026-11-07.
+            if lat is None and row["cinenom"].strip().casefold() == "gallia" and postal_code in {"17100", "17104"}:
+                lat, lon = 45.74716241741378, -0.6345596909523011
             version = {"VERSION_ORIGINAL": "VO", "VERSION_FRANCAISE": "VF"}.get(row["filmversion"], "")
             shows.add((local.date().isoformat(), local.strftime("%H:%M"), row["filmtitle"].strip(),
                        row["cinenom"], lat, lon, row["showurl"] or "", version))
     if not shows:
         raise ValueError("Aucune séance à venir pour les salles suivies.")
-    return sorted(shows)
+    return sorted(shows, key=lambda show: tuple(str(value) for value in show))
 
 
 def main():
